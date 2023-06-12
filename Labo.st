@@ -1,17 +1,21 @@
 !classDefinition: #Misil category: 'Labo'!
 Object subclass: #Misil
-	instanceVariableNames: 'danio'
+	instanceVariableNames: 'danio reduccionPorKm reduccionDanio'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Labo'!
+
+!Misil methodsFor: 'as yet unclassified' stamp: 'afs 6/11/2023 17:45:24'!
+calcularReduccionDanio: velocidadPromedio
+	^((velocidadPromedio/reduccionPorKm)*reduccionDanio).! !
 
 !Misil methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 18:58:33'!
 danio
 	^danio.! !
 
-!Misil methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:58:42'!
-infligirDanioA: unTanque
-	self subclassResponsibility.! !
+!Misil methodsFor: 'as yet unclassified' stamp: 'afs 6/11/2023 23:33:09'!
+infligir: puntos a: unTanque
+	unTanque blindaje: (unTanque blindaje - puntos).! !
 
 !Misil methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 18:57:01'!
 initialize
@@ -25,14 +29,16 @@ Misil subclass: #Bazooka
 	poolDictionaries: ''
 	category: 'Labo'!
 
-!Bazooka methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 23:28:22'!
-infligirDanioA: unTanque.
-	unTanque blindaje: (unTanque blindaje) - (2*(cantidadCabezasNucleares * danio)).! !
+!Bazooka methodsFor: 'as yet unclassified' stamp: 'afs 6/12/2023 16:34:29'!
+danio
+	^ 2 * cantidadCabezasNucleares  * danio.! !
 
-!Bazooka methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 18:59:42'!
+!Bazooka methodsFor: 'as yet unclassified' stamp: 'afs 6/11/2023 17:12:34'!
 initialize
 	danio := 5.
-	cantidadCabezasNucleares := 4.! !
+	cantidadCabezasNucleares := 4.
+	reduccionDanio := 2.
+	reduccionPorKm  := 5.! !
 
 
 !classDefinition: #CoheteGrosso category: 'Labo'!
@@ -42,13 +48,11 @@ Misil subclass: #CoheteGrosso
 	poolDictionaries: ''
 	category: 'Labo'!
 
-!CoheteGrosso methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 23:33:04'!
-infligirDanioA: unTanque
-	unTanque blindaje: (unTanque blindaje) - (danio).! !
-
-!CoheteGrosso methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:40:18'!
+!CoheteGrosso methodsFor: 'as yet unclassified' stamp: 'afs 6/11/2023 17:13:25'!
 initialize
-	danio := 100.! !
+	danio := 100.
+	reduccionDanio  := 3.
+	reduccionPorKm  := 5.! !
 
 
 !classDefinition: #MisilTermico category: 'Labo'!
@@ -58,13 +62,16 @@ Misil subclass: #MisilTermico
 	poolDictionaries: ''
 	category: 'Labo'!
 
-!MisilTermico methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 23:29:41'!
-infligirDanioA: unTanque
-	unTanque emitoCalor ifTrue:[unTanque blindaje: (unTanque blindaje - danio)].! !
+!MisilTermico methodsFor: 'as yet unclassified' stamp: 'afs 6/11/2023 23:35:07'!
+infligir: puntos a: unTanque
+	(unTanque estoyEnMovimiento | unTanque cantidadDeTripulantes  > 3)
+		ifTrue:[super infligir: puntos a: unTanque].! !
 
-!MisilTermico methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:25:31'!
+!MisilTermico methodsFor: 'as yet unclassified' stamp: 'afs 6/11/2023 17:13:06'!
 initialize
-	danio := 25.! !
+	danio := 25.
+	reduccionDanio := 0.
+	reduccionPorKm := 0.! !
 
 
 !classDefinition: #Tanque category: 'Labo'!
@@ -78,10 +85,24 @@ Object subclass: #Tanque
 arsenal
 	^arsenal.! !
 
-!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/9/2023 19:40:24'!
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/12/2023 00:07:13'!
 arsenal: unArsenaldeArmas
-	unArsenaldeArmas  size. 
 	arsenal := unArsenaldeArmas.! !
+
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/12/2023 17:03:58'!
+atacarTanque: otroTanque
+	"En el arsenal, siempre se toma el primer misil disponible, y al final del metodo
+	se quita"
+	
+	|unMisil promedioVelocidad danio|
+	unMisil := self arsenal ifEmpty: [^ 'Arsenal vacio, no hay misiles.'] ifNotEmpty:[self arsenal first].
+	danio := unMisil danio.
+	(self estoyEnMovimiento  | otroTanque estoyEnMovimiento ) ifTrue: [
+		promedioVelocidad := (self velocidadActual + otroTanque velocidadActual)//2.
+		danio := danio - (unMisil calcularReduccionDanio: promedioVelocidad).
+	].
+	unMisil infligir: danio a: otroTanque.
+	self arsenal removeAt: 1.! !
 
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/9/2023 18:25:12'!
 blindaje
