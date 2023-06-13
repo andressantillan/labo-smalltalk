@@ -13,13 +13,22 @@ calcularReduccionDanio: velocidadPromedio
 danio
 	^danio.! !
 
-!Misil methodsFor: 'as yet unclassified' stamp: 'afs 6/11/2023 23:33:09'!
+!Misil methodsFor: 'as yet unclassified' stamp: 'afs 6/12/2023 23:48:33'!
 infligir: puntos a: unTanque
+	|cantidadTripulantesMueren|
+	cantidadTripulantesMueren := puntos // 50.
+	cantidadTripulantesMueren > 0 ifTrue:[unTanque quitarTripulantes: cantidadTripulantesMueren].
 	unTanque blindaje: (unTanque blindaje - puntos).! !
 
 !Misil methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 18:57:01'!
 initialize
 	self subclassResponsibility.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Misil class' category: 'Labo'!
+Misil class
+	instanceVariableNames: 'quitarTripulante'!
 
 
 !classDefinition: #Bazooka category: 'Labo'!
@@ -76,8 +85,8 @@ initialize
 
 !classDefinition: #Tanque category: 'Labo'!
 Object subclass: #Tanque
-	instanceVariableNames: 'nombre modelo cantidadDeTripulantes blindaje arsenal velocidadActual velocidadMaxima'
-	classVariableNames: ''
+	instanceVariableNames: 'nombre modelo cantidadTripulantes blindaje arsenal velocidadActual'
+	classVariableNames: 'CantidadMaximaTripulantes VelocidadMaxima'
 	poolDictionaries: ''
 	category: 'Labo'!
 
@@ -89,20 +98,24 @@ arsenal
 arsenal: unArsenaldeArmas
 	arsenal := unArsenaldeArmas.! !
 
-!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/12/2023 17:03:58'!
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 00:14:18'!
 atacarTanque: otroTanque
 	"En el arsenal, siempre se toma el primer misil disponible, y al final del metodo
 	se quita"
 	
 	|unMisil promedioVelocidad danio|
-	unMisil := self arsenal ifEmpty: [^ 'Arsenal vacio, no hay misiles.'] ifNotEmpty:[self arsenal first].
-	danio := unMisil danio.
-	(self estoyEnMovimiento  | otroTanque estoyEnMovimiento ) ifTrue: [
-		promedioVelocidad := (self velocidadActual + otroTanque velocidadActual)//2.
-		danio := danio - (unMisil calcularReduccionDanio: promedioVelocidad).
-	].
-	unMisil infligir: danio a: otroTanque.
-	self arsenal removeAt: 1.! !
+	self puedoDisparar ifTrue:[
+		unMisil := self arsenal ifEmpty: [^ 'Arsenal vacio, no hay misiles.'] ifNotEmpty:[self arsenal first].
+		danio := unMisil danio.
+		(self estoyEnMovimiento  | otroTanque estoyEnMovimiento ) ifTrue: [
+			promedioVelocidad := (self velocidadActual + otroTanque velocidadActual)//2.
+			danio := danio - (unMisil calcularReduccionDanio: promedioVelocidad).
+		].
+		unMisil infligir: danio a: otroTanque.
+		self arsenal removeAt: 1.	
+	] 
+	ifFalse:[ ^'No puedo disparar'].
+	! !
 
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/9/2023 18:25:12'!
 blindaje
@@ -112,17 +125,29 @@ blindaje
 blindaje: unNumero
 	blindaje := unNumero.! !
 
-!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/8/2023 15:46:46'!
-cantidadDeTripulantes
-	^cantidadDeTripulantes.! !
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:56:47'!
+cantidadMaximaTripulantes
+	^CantidadMaximaTripulantes.! !
 
-!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:36:37'!
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:48:10'!
+cantidadTripulantes
+	^cantidadTripulantes.! !
+
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 17:13:37'!
+cantidadTripulantes: cantidad
+	cantidadTripulantes := cantidad.! !
+
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:42:46'!
 emitoCalor
-	^ self estoyEnMovimiento | (cantidadDeTripulantes > 3).! !
+	^ self estoyEnMovimiento | (cantidadTripulantes > 3).! !
 
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:26:54'!
 estoyEnMovimiento
 	^self velocidadActual > 0.! !
+
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:42:46'!
+estoyFueraDeCombate
+	^cantidadTripulantes == 0.! !
 
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:10:26'!
 initialize
@@ -136,13 +161,9 @@ modelo
 modelo: unModelo
 	modelo := unModelo.! !
 
-!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:31:03'!
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 17:11:55'!
 movermeA: unaVelocidad
-	unaVelocidad >= 0 ifTrue:[
-		unaVelocidad >= velocidadMaxima 
-		ifTrue:[self velocidadActual: velocidadMaxima]
-		ifFalse:[self velocidadActual: unaVelocidad ].
-	].! !
+	self velocidadActual: unaVelocidad.! !
 
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/8/2023 15:46:01'!
 nombre
@@ -152,17 +173,31 @@ nombre
 nombre: unNombre
 	nombre := unNombre.! !
 
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:42:46'!
+puedoDisparar
+	^cantidadTripulantes >= 3 & self estoyEnMovimiento.! !
+
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 17:10:49'!
+quitarTripulantes: cantidad
+	cantidad >= self cantidadTripulantes 
+	ifTrue: [^self cantidadTripulantes: 0].
+	self cantidadTripulantes: (self cantidadTripulantes - cantidad).! !
+
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:08:17'!
 velocidadActual
 	^velocidadActual.! !
 
-!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:08:49'!
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 17:12:45'!
 velocidadActual: unaVelocidad
-	velocidadActual := unaVelocidad.! !
+	unaVelocidad >= 0 ifTrue:[
+		unaVelocidad >= VelocidadMaxima 
+		ifTrue:[ velocidadActual:= VelocidadMaxima]
+		ifFalse:[ velocidadActual:= unaVelocidad ].
+	].! !
 
-!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/9/2023 18:25:48'!
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:39:32'!
 velocidadMaxima
-	^velocidadMaxima.! !
+	^VelocidadMaxima.! !
 
 
 !classDefinition: #TanqueLiviano category: 'Labo'!
@@ -172,12 +207,14 @@ Tanque subclass: #TanqueLiviano
 	poolDictionaries: ''
 	category: 'Labo'!
 
-!TanqueLiviano methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:10:42'!
-initialize
-	cantidadDeTripulantes := 5.
+!TanqueLiviano methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:54:37'!
+initialize	
+	CantidadMaximaTripulantes := 5.
+	
+	cantidadTripulantes := CantidadMaximaTripulantes.
 	blindaje := 100.
 	arsenal := OrderedCollection new.
-	velocidadMaxima := 70.
+	VelocidadMaxima := 70.
 	
 	velocidadActual := 0.! !
 
@@ -189,12 +226,14 @@ Tanque subclass: #TanquePesado
 	poolDictionaries: ''
 	category: 'Labo'!
 
-!TanquePesado methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:11:00'!
-initialize
-	cantidadDeTripulantes := 4.
+!TanquePesado methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:55:10'!
+initialize	
+	CantidadMaximaTripulantes := 4.
+	
+	cantidadTripulantes := CantidadMaximaTripulantes.
 	blindaje := 150.
 	arsenal := OrderedCollection new.
-	velocidadMaxima := 50.
+	VelocidadMaxima := 50.
 	
 	velocidadActual := 0.! !
 
@@ -206,27 +245,44 @@ Tanque subclass: #TanqueRapido
 	poolDictionaries: ''
 	category: 'Labo'!
 
-!TanqueRapido methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:11:12'!
-initialize
-	cantidadDeTripulantes := 3.
+!TanqueRapido methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:55:43'!
+initialize	
+	CantidadMaximaTripulantes := 3.
+	
+	cantidadTripulantes := CantidadMaximaTripulantes.
 	blindaje := 75.
 	arsenal := OrderedCollection new.
-	velocidadMaxima := 100.
+	VelocidadMaxima := 100.
 	
 	velocidadActual := 0.! !
 
 
 !classDefinition: #Unidad category: 'Labo'!
 Object subclass: #Unidad
-	instanceVariableNames: 'tanques'
-	classVariableNames: ''
+	instanceVariableNames: 'nombre tanques'
+	classVariableNames: 'CantidadTanques'
 	poolDictionaries: ''
 	category: 'Labo'!
 
-!Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/8/2023 15:32:15'!
+!Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 17:16:18'!
 initialize
-	tanques := OrderedCollection new.! !
+	tanques := OrderedCollection new.
+	CantidadTanques := 5.! !
+
+!Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 00:24:03'!
+nombre
+	^nombre.! !
+
+!Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 00:24:25'!
+nombre: unNombre
+	nombre := unNombre.! !
 
 !Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/8/2023 15:31:59'!
 tanques
 	^tanques.! !
+
+!Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 00:22:28'!
+tanques: unaColecciondeTanques
+	unaColecciondeTanques size > CantidadTanques 
+	ifTrue:[^'Solo se permiten', CantidadTanques asString ,' tanques.'].
+	tanques := unaColecciondeTanques.! !
