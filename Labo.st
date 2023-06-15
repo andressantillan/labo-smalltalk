@@ -86,7 +86,7 @@ initialize
 !classDefinition: #Tanque category: 'Labo'!
 Object subclass: #Tanque
 	instanceVariableNames: 'nombre modelo cantidadTripulantes blindaje arsenal velocidadActual'
-	classVariableNames: 'CantidadMaximaTripulantes VelocidadMaxima'
+	classVariableNames: 'CantidadMaximaTripulantes CantidadMisiles VelocidadMaxima'
 	poolDictionaries: ''
 	category: 'Labo'!
 
@@ -94,8 +94,10 @@ Object subclass: #Tanque
 arsenal
 	^arsenal.! !
 
-!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/12/2023 00:07:13'!
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 22:57:01'!
 arsenal: unArsenaldeArmas
+	unArsenaldeArmas size > CantidadMisiles 
+	ifTrue: [^'Solo se admite un arsenal de ', self cantidadMisiles asString,' misiles.' ].
 	arsenal := unArsenaldeArmas.! !
 
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 00:14:18'!
@@ -128,6 +130,10 @@ blindaje: unNumero
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:56:47'!
 cantidadMaximaTripulantes
 	^CantidadMaximaTripulantes.! !
+
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 22:50:16'!
+cantidadMisiles
+	^CantidadMisiles.! !
 
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:48:10'!
 cantidadTripulantes
@@ -207,15 +213,14 @@ Tanque subclass: #TanqueLiviano
 	poolDictionaries: ''
 	category: 'Labo'!
 
-!TanqueLiviano methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:54:37'!
-initialize	
+!TanqueLiviano methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 22:51:07'!
+initialize
 	CantidadMaximaTripulantes := 5.
-	
+	CantidadMisiles := 15.
+	VelocidadMaxima := 70.
 	cantidadTripulantes := CantidadMaximaTripulantes.
 	blindaje := 100.
 	arsenal := OrderedCollection new.
-	VelocidadMaxima := 70.
-	
 	velocidadActual := 0.! !
 
 
@@ -226,15 +231,14 @@ Tanque subclass: #TanquePesado
 	poolDictionaries: ''
 	category: 'Labo'!
 
-!TanquePesado methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:55:10'!
-initialize	
+!TanquePesado methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 22:51:48'!
+initialize
 	CantidadMaximaTripulantes := 4.
-	
+	CantidadMisiles := 20.
+	VelocidadMaxima := 50.
 	cantidadTripulantes := CantidadMaximaTripulantes.
 	blindaje := 150.
 	arsenal := OrderedCollection new.
-	VelocidadMaxima := 50.
-	
 	velocidadActual := 0.! !
 
 
@@ -245,15 +249,14 @@ Tanque subclass: #TanqueRapido
 	poolDictionaries: ''
 	category: 'Labo'!
 
-!TanqueRapido methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:55:43'!
-initialize	
+!TanqueRapido methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 22:52:47'!
+initialize
 	CantidadMaximaTripulantes := 3.
-	
+	CantidadMisiles := 10.
+	VelocidadMaxima := 100.
 	cantidadTripulantes := CantidadMaximaTripulantes.
 	blindaje := 75.
 	arsenal := OrderedCollection new.
-	VelocidadMaxima := 100.
-	
 	velocidadActual := 0.! !
 
 
