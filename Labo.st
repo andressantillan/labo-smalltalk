@@ -13,22 +13,16 @@ calcularReduccionDanio: velocidadPromedio
 danio
 	^danio.! !
 
-!Misil methodsFor: 'as yet unclassified' stamp: 'afs 6/12/2023 23:48:33'!
+!Misil methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 17:12:03'!
 infligir: puntos a: unTanque
 	|cantidadTripulantesMueren|
 	cantidadTripulantesMueren := puntos // 50.
 	cantidadTripulantesMueren > 0 ifTrue:[unTanque quitarTripulantes: cantidadTripulantesMueren].
-	unTanque blindaje: (unTanque blindaje - puntos).! !
+	unTanque disminuirBlindaje: (unTanque blindaje - puntos).! !
 
 !Misil methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 18:57:01'!
 initialize
 	self subclassResponsibility.! !
-
-"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
-
-!classDefinition: 'Misil class' category: 'Labo'!
-Misil class
-	instanceVariableNames: 'quitarTripulante'!
 
 
 !classDefinition: #Bazooka category: 'Labo'!
@@ -37,6 +31,20 @@ Misil subclass: #Bazooka
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'Labo'!
+
+!Bazooka methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 16:35:52'!
+bazookaConCabezasNucleares: cantidad
+	|bazooka|
+	bazooka := Bazooka new.
+	^bazooka cantidadCabezasNucleares: cantidad.! !
+
+!Bazooka methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 16:26:57'!
+cantidadCabezasNucleares
+	^cantidadCabezasNucleares.! !
+
+!Bazooka methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 16:27:39'!
+cantidadCabezasNucleares: unNumero
+	cantidadCabezasNucleares := unNumero.! !
 
 !Bazooka methodsFor: 'as yet unclassified' stamp: 'afs 6/12/2023 16:34:29'!
 danio
@@ -71,6 +79,10 @@ Misil subclass: #MisilTermico
 	poolDictionaries: ''
 	category: 'Labo'!
 
+!MisilTermico methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 15:33:20'!
+danio
+	^self class danio. ! !
+
 !MisilTermico methodsFor: 'as yet unclassified' stamp: 'afs 6/11/2023 23:35:07'!
 infligir: puntos a: unTanque
 	(unTanque estoyEnMovimiento | unTanque cantidadDeTripulantes  > 3)
@@ -81,6 +93,21 @@ initialize
 	danio := 25.
 	reduccionDanio := 0.
 	reduccionPorKm := 0.! !
+
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'MisilTermico class' category: 'Labo'!
+MisilTermico class
+	instanceVariableNames: 'danio'!
+
+!MisilTermico class methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 16:15:10'!
+danio
+	danio ifNil:[ danio := 25].
+	^danio.! !
+
+!MisilTermico class methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 15:31:06'!
+initialize
+	danio := 25.! !
 
 
 !classDefinition: #Tanque category: 'Labo'!
@@ -119,6 +146,13 @@ atacarTanque: otroTanque
 	ifFalse:[ ^'No puedo disparar'].
 	! !
 
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 16:25:50'!
+atacarUnidad: unaUnidad
+	|tanquesVivos|
+	tanquesVivos := unaUnidad tanques select:[:t | t estoyFueraDeCombate not].
+	tanquesVivos ifEmpty:[^'La unidad no tiene tanques vivos'].
+	self atacarTanque: tanquesVivos first.! !
+
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/9/2023 18:25:12'!
 blindaje
 	^blindaje.! !
@@ -126,6 +160,10 @@ blindaje
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 20:10:47'!
 blindaje: unNumero
 	blindaje := unNumero.! !
+
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/8/2023 15:46:46'!
+cantidadDeTripulantes
+	^cantidadDeTripulantes.! !
 
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:56:47'!
 cantidadMaximaTripulantes
@@ -143,6 +181,10 @@ cantidadTripulantes
 cantidadTripulantes: cantidad
 	cantidadTripulantes := cantidad.! !
 
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 17:10:57'!
+disminuirBlindaje: puntos
+	^self blindaje: puntos.! !
+
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:42:46'!
 emitoCalor
 	^ self estoyEnMovimiento | (cantidadTripulantes > 3).! !
@@ -151,9 +193,9 @@ emitoCalor
 estoyEnMovimiento
 	^self velocidadActual > 0.! !
 
-!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 16:42:46'!
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 15:49:51'!
 estoyFueraDeCombate
-	^cantidadTripulantes == 0.! !
+	^ (blindaje == 0)|(cantidadTripulantes == 0).! !
 
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:10:26'!
 initialize
@@ -206,6 +248,53 @@ velocidadMaxima
 	^VelocidadMaxima.! !
 
 
+!classDefinition: #TanqueBlindajeEM category: 'Labo'!
+Tanque subclass: #TanqueBlindajeEM
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Labo'!
+
+!TanqueBlindajeEM methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 17:14:55'!
+disminuirBlindaje: puntos
+	super disminuirBlindaje: (puntos * 0.8).! !
+
+!TanqueBlindajeEM methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 16:53:05'!
+initialize
+	CantidadMaximaTripulantes := 5.
+	CantidadMisiles := 15.
+	VelocidadMaxima := 70.
+	cantidadTripulantes := CantidadMaximaTripulantes.
+	blindaje := 100.
+	arsenal := OrderedCollection new.
+	velocidadActual := 0.! !
+
+
+!classDefinition: #TanqueDron category: 'Labo'!
+Tanque subclass: #TanqueDron
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Labo'!
+
+!TanqueDron methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 17:33:09'!
+initialize	
+	|bazooka|
+	CantidadMaximaTripulantes := 0.
+	CantidadMisiles := 15.
+	VelocidadMaxima := 100.
+	cantidadTripulantes := CantidadMaximaTripulantes.
+	blindaje := 75.
+	bazooka := Bazooka bazookaConCabezasNucleares: 4.
+	arsenal := {
+		bazooka. bazooka. bazooka. 
+		bazooka. bazooka. bazooka. 
+		bazooka. bazooka. bazooka. 
+		bazooka. bazooka. bazooka. 
+		bazooka. bazooka.} asOrderedCollection.
+	velocidadActual := 0.! !
+
+
 !classDefinition: #TanqueLiviano category: 'Labo'!
 Tanque subclass: #TanqueLiviano
 	instanceVariableNames: ''
@@ -249,9 +338,9 @@ Tanque subclass: #TanqueRapido
 	poolDictionaries: ''
 	category: 'Labo'!
 
-!TanqueRapido methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 22:52:47'!
+!TanqueRapido methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 17:20:39'!
 initialize
-	CantidadMaximaTripulantes := 3.
+	CantidadMaximaTripulantes := 0.
 	CantidadMisiles := 10.
 	VelocidadMaxima := 100.
 	cantidadTripulantes := CantidadMaximaTripulantes.
@@ -272,6 +361,12 @@ initialize
 	tanques := OrderedCollection new.
 	CantidadTanques := 5.! !
 
+!Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/15/2023 15:23:54'!
+moverseA: unaVelocidad
+	self tanques 
+		select:[ :t | t estoyFueraDeCombate not ]
+		thenDo: [ :t | t movermeA: unaVelocidad ].! !
+
 !Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 00:24:03'!
 nombre
 	^nombre.! !
@@ -289,3 +384,5 @@ tanques: unaColecciondeTanques
 	unaColecciondeTanques size > CantidadTanques 
 	ifTrue:[^'Solo se permiten', CantidadTanques asString ,' tanques.'].
 	tanques := unaColecciondeTanques.! !
+
+MisilTermico initialize!
