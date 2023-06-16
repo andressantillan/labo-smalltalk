@@ -243,6 +243,10 @@ reduccionDanio: unMisil contra: unTanque
 	].
 	^reduccionDanio.! !
 
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/16/2023 18:40:34'!
+tengoMunicion
+	^self arsenal size > 0.! !
+
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:08:17'!
 velocidadActual
 	^velocidadActual.! !
@@ -372,6 +376,31 @@ Object subclass: #Unidad
 	poolDictionaries: ''
 	category: 'Labo'!
 
+!Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/16/2023 18:24:37'!
+atacarUnidad: unaUnidad
+	self tanques select:[ :t | t estoyFueraDeCombate not ]
+	thenDo:[ :t | t atacarUnidad: unaUnidad ].! !
+
+!Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/16/2023 19:12:10'!
+batallaEntre: unaUnidad y: otraUnidad
+	|unidadAtaca unidadEnEspera|
+	unidadAtaca := unaUnidad.
+	unidadEnEspera := otraUnidad.
+	(unaUnidad estoyFueraDeCombate not | otraUnidad estoyFueraDeCombate) 
+	whileTrue:[
+		unidadAtaca atacarUnidad: unidadEnEspera.
+		unidadAtaca := unidadEnEspera.
+		unidadEnEspera := unidadAtaca. 	
+	].! !
+
+!Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/16/2023 18:51:49'!
+estoyFueraDeCombate
+	^self hayTanquesEnCombate  | self tienenMunicionLosTanques.! !
+
+!Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/16/2023 18:36:06'!
+hayTanquesEnCombate
+	^self tanques select:[ :t | t estoyFueraDeCombate not] size > 0.! !
+
 !Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 17:16:18'!
 initialize
 	tanques := OrderedCollection new.
@@ -400,5 +429,9 @@ tanques: unaColecciondeTanques
 	unaColecciondeTanques size > CantidadTanques 
 	ifTrue:[^'Solo se permiten', CantidadTanques asString ,' tanques.'].
 	tanques := unaColecciondeTanques.! !
+
+!Unidad methodsFor: 'as yet unclassified' stamp: 'afs 6/16/2023 18:40:59'!
+tienenMunicionLosTanques
+	^self tanques select: [ :t | t tengoMunicion ] size > 0.! !
 
 MisilTermico initialize!
