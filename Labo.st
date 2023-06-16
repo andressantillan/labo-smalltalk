@@ -24,6 +24,12 @@ infligir: puntos a: unTanque
 initialize
 	self subclassResponsibility.! !
 
+"-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- "!
+
+!classDefinition: 'Misil class' category: 'Labo'!
+Misil class
+	instanceVariableNames: 'quitarTripulante'!
+
 
 !classDefinition: #Bazooka category: 'Labo'!
 Misil subclass: #Bazooka
@@ -127,19 +133,15 @@ arsenal: unArsenaldeArmas
 	ifTrue: [^'Solo se admite un arsenal de ', self cantidadMisiles asString,' misiles.' ].
 	arsenal := unArsenaldeArmas.! !
 
-!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/13/2023 00:14:18'!
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/16/2023 17:08:58'!
 atacarTanque: otroTanque
 	"En el arsenal, siempre se toma el primer misil disponible, y al final del metodo
 	se quita"
 	
-	|unMisil promedioVelocidad danio|
+	|unMisil danio|
 	self puedoDisparar ifTrue:[
 		unMisil := self arsenal ifEmpty: [^ 'Arsenal vacio, no hay misiles.'] ifNotEmpty:[self arsenal first].
-		danio := unMisil danio.
-		(self estoyEnMovimiento  | otroTanque estoyEnMovimiento ) ifTrue: [
-			promedioVelocidad := (self velocidadActual + otroTanque velocidadActual)//2.
-			danio := danio - (unMisil calcularReduccionDanio: promedioVelocidad).
-		].
+		danio := unMisil danio - self reduccionDanio: unMisil contra: otroTanque.
 		unMisil infligir: danio a: otroTanque.
 		self arsenal removeAt: 1.	
 	] 
@@ -231,6 +233,16 @@ quitarTripulantes: cantidad
 	ifTrue: [^self cantidadTripulantes: 0].
 	self cantidadTripulantes: (self cantidadTripulantes - cantidad).! !
 
+!Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/16/2023 17:07:37'!
+reduccionDanio: unMisil contra: unTanque
+	|promedioVelocidad reduccionDanio|
+	reduccionDanio := 0.
+	(self estoyEnMovimiento  | unTanque estoyEnMovimiento ) ifTrue: [
+		promedioVelocidad := (self velocidadActual + unTanque velocidadActual)//2.
+		reduccionDanio := unMisil calcularReduccionDanio: promedioVelocidad
+	].
+	^reduccionDanio.! !
+
 !Tanque methodsFor: 'as yet unclassified' stamp: 'afs 6/10/2023 19:08:17'!
 velocidadActual
 	^velocidadActual.! !
@@ -293,6 +305,10 @@ initialize
 		bazooka. bazooka. bazooka. 
 		bazooka. bazooka.} asOrderedCollection.
 	velocidadActual := 0.! !
+
+!TanqueDron methodsFor: 'as yet unclassified' stamp: 'afs 6/16/2023 17:13:36'!
+reduccionDanio: unMisil contra: unTanque
+	^0.! !
 
 
 !classDefinition: #TanqueLiviano category: 'Labo'!
